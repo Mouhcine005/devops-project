@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DevOps Project App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>DevOps Users App</h1>
+
+    <div>
+        <h2>Add User</h2>
+        <input type="text" id="name" placeholder="Enter name">
+        <button onclick="addUser()">Add</button>
+    </div>
+
+    <div>
+        <h2>Users List</h2>
+        <ul id="users-list"></ul>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
