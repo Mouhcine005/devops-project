@@ -6,17 +6,22 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>DevOps Users App</h1>
-
-    <div>
-        <h2>Add User</h2>
-        <input type="text" id="name" placeholder="Enter name">
-        <button onclick="addUser()">Add</button>
+    <div class="banner">
+        <h1>DevOps Users App</h1>
+        <p class="version">Version 3.0 🚀</p>
     </div>
 
-    <div>
-        <h2>Users List</h2>
-        <ul id="users-list"></ul>
+    <div class="container">
+        <div class="card">
+            <h2>Add User</h2>
+            <input type="text" id="name" placeholder="Enter name">
+            <button onclick="addUser()">Add</button>
+        </div>
+
+        <div class="card">
+            <h2>Users List <span id="user-count" class="badge">0</span></h2>
+            <ul id="users-list"></ul>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
