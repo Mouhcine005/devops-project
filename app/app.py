@@ -10,6 +10,11 @@ users = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]
 def home():
     return render_template("index.html")
 
+# Health check
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "version": "2.0"})
+
 # API endpoints
 @app.route("/api/users", methods=["GET"])
 def get_users():
