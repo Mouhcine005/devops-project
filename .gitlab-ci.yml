@@ -17,9 +17,7 @@ build_and_push:
     - docker:24.0.5-dind
   script:
     - docker info
-    # Build the image using the Dockerfile inside your docker folder
     - docker build -t $IMAGE_NAME -f docker/Dockerfile .
-    # Login and push in the same job
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - docker push $IMAGE_NAME
   only:
@@ -37,7 +35,8 @@ deploy:
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-    - sed -i "s|image: .*devops-app.*|image: $IMAGE_NAME|" kubernetes/deploy.yml
+    - |
+        sed -i "s|image: .*devops-app.*|image: ${IMAGE_NAME}|" kubernetes/deploy.yml
     - scp -o StrictHostKeyChecking=no kubernetes/deploy.yml $EC2_USER@$MASTER_IP:/home/ec2-user/deploy.yml
     - |
       ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP bash << EOF
