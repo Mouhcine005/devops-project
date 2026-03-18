@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request, render_template
 app = Flask(__name__)
 
 # Sample users data
-users = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]
+users = [{"id": 1, "name": "Mouchine"}, {"id": 2, "name": "Mohamed"}]
 
 # Serve frontend
 @app.route("/")

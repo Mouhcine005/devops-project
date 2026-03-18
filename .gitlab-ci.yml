@@ -1,4 +1,5 @@
 stages:
+  - test
   - build_and_push
   - deploy
 
@@ -8,7 +9,20 @@ variables:
   DOCKER_TLS_CERTDIR: ""
 
 # -----------------------------
-# 1. Build and Push Docker Image
+# 1. Test
+# -----------------------------
+test:
+  stage: test
+  image: python:3.11-slim
+  script:
+    - pip install -r app/requirements.txt
+    - pytest app/test_app.py -v
+  only:
+    - main
+
+
+# -----------------------------
+# 2. Build and Push Docker Image
 # -----------------------------
 build_and_push:
   stage: build_and_push
@@ -24,7 +38,7 @@ build_and_push:
     - main
 
 # -----------------------------
-# 2. Deploy / Update in Kubernetes Cluster
+# 3. Deploy / Update in Kubernetes Cluster
 # -----------------------------
 deploy:
   stage: deploy
