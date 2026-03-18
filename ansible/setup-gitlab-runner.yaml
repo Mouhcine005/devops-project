@@ -1,0 +1,94 @@
+---
+- name: Install and Configure GitLab Runner on Worker Node
+  hosts: worker
+  become: true
+  gather_facts: false
+  vars:
+    gitlab_url: "https://gitlab.com/"
+    gitlab_runner_registration_token: "glrt-1crlHZ83ygcqFeO4GJEfF286MQpwOjFidXZ5cwp0OjMKdTpsNGRvNxg.01.1j1g7cp0h"
+    runner_name: "k8s-worker-runner"
+    executor: "shell"
+    kubeconfig_path: "/home/ec2-user/.kube/config"
+
+  tasks:
+    # -----------------------------
+    # 1. Install dependencies
+    # -----------------------------
+    - name: Ensure Git is installed
+      yum:
+        name: git
+        state: present
+
+    - name: Ensure curl is installed
+      yum:
+        name: curl
+        state: present
+
+    # -----------------------------
+    # 2. Add GitLab Runner repo and install
+    # -----------------------------
+    - name: Add GitLab Runner repository
+      shell: |
+        curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh | bash
+      args:
+        creates: /etc/yum.repos.d/gitlab-runner.repo
+
+    - name: Install GitLab Runner
+      yum:
+        name: gitlab-runner
+        state: present
+
+    - name: Ensure GitLab Runner service is started and enabled
+      systemd:
+        name: gitlab-runner
+        enabled: true
+        state: started
+
+    # -----------------------------
+    # 3. Register GitLab Runner
+    # -----------------------------
+    - name: Register GitLab Runner
+      shell: >
+        gitlab-runner register --non-interactive
+        --url {{ gitlab_url }}
+        --registration-token {{ gitlab_runner_registration_token }}
+        --executor {{ executor }}
+        --description "{{ runner_name }}"
+        --tag-list "k8s,devops"
+        --run-untagged="true"
+        --locked="false"
+      args:
+        creates: /etc/gitlab-runner/config.toml
+
+    # -----------------------------
+    # 4. Configure kubeconfig for Runner
+    # -----------------------------
+    - name: Ensure .kube directory exists on worker
+      file:
+        path: /home/ec2-user/.kube
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: 0700
+
+    - name: Copy kubeconfig from master node
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: /tmp/kubeconfig-master.conf
+        flat: yes
+      delegate_to: master-node
+
+    - name: Copy kubeconfig to worker node home
+      copy:
+        src: /tmp/kubeconfig-master.conf
+        dest: "{{ kubeconfig_path }}"
+        owner: ec2-user
+        group: ec2-user
+        mode: 0600
+
+    - name: Ensure KUBECONFIG environment variable is set for ec2-user
+      lineinfile:
+        path: /home/ec2-user/.bashrc
+        line: 'export KUBECONFIG={{ kubeconfig_path }}'
+        create: yes
+        state: present
