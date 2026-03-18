@@ -37,12 +37,13 @@ deploy:
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - sed -i "s|image: .*devops-app.*|image: $IMAGE_NAME|" kubernetes/deploy.yml
+    - scp -o StrictHostKeyChecking=no kubernetes/deploy.yml $EC2_USER@$MASTER_IP:/home/ec2-user/deploy.yml
     - |
       ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP bash << EOF
         set -e
         export KUBECONFIG=/home/ec2-user/.kube/config
-        sed -i 's|image: .*devops-app.*|image: $IMAGE_NAME|' /home/ec2-user/devops-project/kubernetes/deploy.yml
-        kubectl apply -f /home/ec2-user/devops-project/kubernetes/deploy.yml
+        kubectl apply -f /home/ec2-user/deploy.yml
         kubectl rollout status deployment/devops-app-deployment --timeout=120s
       EOF
   only:
