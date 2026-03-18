@@ -18,7 +18,7 @@ build:
     - docker:24.0.5-dind
   script:
     - docker info
-    - docker build -t $IMAGE_NAME ./docker
+    - docker build -t $IMAGE_NAME -f docker/Dockerfile .
   only:
     - main
 
