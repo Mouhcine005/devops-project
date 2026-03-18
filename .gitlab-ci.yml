@@ -30,7 +30,9 @@ build_and_push:
 # -----------------------------
 deploy:
   stage: deploy
-  image: bitnami/kubectl:latest
+  image: alpine:3.19
+  before_script:
+    - apk add --no-cache openssh-client bash
   script:
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
