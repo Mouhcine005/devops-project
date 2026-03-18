@@ -15,6 +15,7 @@ spec:
       containers:
       - name: devops-app
         image: refoli001/devops-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 

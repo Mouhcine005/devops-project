@@ -41,8 +41,9 @@ deploy:
       ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP bash << EOF
         set -e
         export KUBECONFIG=/home/ec2-user/.kube/config
-        kubectl set image deployment/devops-app devops-app=$IMAGE_NAME
-        kubectl rollout status deployment/devops-app
+        sed -i 's|image: .*devops-app.*|image: $IMAGE_NAME|' /home/ec2-user/devops-project/kubernetes/deploy.yml
+        kubectl apply -f /home/ec2-user/devops-project/kubernetes/deploy.yml
+        kubectl rollout status deployment/devops-app-deployment --timeout=120s
       EOF
   only:
     - main
