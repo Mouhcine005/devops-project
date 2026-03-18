@@ -1,17 +1,30 @@
+let allUsers = [];
+
 function fetchUsers() {
     fetch("/api/users")
         .then(response => response.json())
         .then(data => {
-            const list = document.getElementById("users-list");
-            const count = document.getElementById("user-count");
-            list.innerHTML = "";
-            count.textContent = data.length;
-            data.forEach(user => {
-                const li = document.createElement("li");
-                li.innerHTML = `<span>${user.id}: ${user.name}</span> <button onclick="removeUser(${user.id})">Remove</button>`;
-                list.appendChild(li);
-            });
+            allUsers = data;
+            renderUsers(allUsers);
         });
+}
+
+function renderUsers(data) {
+    const list = document.getElementById("users-list");
+    const count = document.getElementById("user-count");
+    list.innerHTML = "";
+    count.textContent = data.length;
+    data.forEach(user => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span>${user.id}: ${user.name}</span> <button onclick="removeUser(${user.id})">Remove</button>`;
+        list.appendChild(li);
+    });
+}
+
+function filterUsers() {
+    const query = document.getElementById("search").value.toLowerCase();
+    const filtered = allUsers.filter(u => u.name.toLowerCase().includes(query));
+    renderUsers(filtered);
 }
 
 function addUser() {

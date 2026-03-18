@@ -13,7 +13,7 @@ def home():
 # Health check
 @app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "version": "2.0"})
+    return jsonify({"status": "ok", "version": "4.0"})
 
 # API endpoints
 @app.route("/api/users", methods=["GET"])
