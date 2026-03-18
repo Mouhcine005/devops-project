@@ -30,7 +30,7 @@ build_and_push:
 # -----------------------------
 deploy:
   stage: deploy
-  image: bitnami/kubectl:latest   # Has kubectl preinstalled
+  image: lachlanevenson/k8s-kubectl:latest   # Prebuilt image with kubectl + bash + ssh
   script:
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
