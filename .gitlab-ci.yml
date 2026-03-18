@@ -5,39 +5,47 @@ stages:
 
 variables:
   IMAGE_NAME: $DOCKER_USERNAME/devops-app:latest
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""   # Disable TLS for DinD
 
 # -----------------------------
 # 1. Build Docker Image
 # -----------------------------
 build:
   stage: build
-  before_script:
-    - apt-get update -y && apt-get install -y docker.io
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
   script:
+    - docker info
     - docker build -t $IMAGE_NAME ./docker
+  only:
+    - main
 
 # -----------------------------
 # 2. Push Docker Image to Docker Hub
 # -----------------------------
 push:
   stage: push
-  before_script:
-    - apt-get update -y && apt-get install -y docker.io
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
   script:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - docker push $IMAGE_NAME
+  only:
+    - main
 
 # -----------------------------
 # 3. Deploy / Update in Kubernetes Cluster
 # -----------------------------
 deploy:
   stage: deploy
-  before_script:
+  image: bitnami/kubectl:latest   # Has kubectl preinstalled
+  script:
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-  script:
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
     - |
       ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP bash << 'MASTER_EOF'
         ssh -o StrictHostKeyChecking=no $EC2_USER@$WORKER_PRIVATE_IP bash << 'WORKER_EOF'
@@ -47,3 +55,5 @@ deploy:
           kubectl apply -f /home/ec2-user/devops-project/kubernetes/deploy.yml
         WORKER_EOF
       MASTER_EOF
+  only:
+    - main
