@@ -38,13 +38,11 @@ deploy:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
     - |
-      ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP bash << 'MASTER_EOF'
-        ssh -o StrictHostKeyChecking=no $EC2_USER@$WORKER_PRIVATE_IP bash << 'WORKER_EOF'
-          set -e
-          export KUBECONFIG=/home/ec2-user/.kube/config
-          kubectl set image -f /home/ec2-user/devops-project/kubernetes/deploy.yml devops-app=$IMAGE_NAME --record
-          kubectl apply -f /home/ec2-user/devops-project/kubernetes/deploy.yml
-        WORKER_EOF
-      MASTER_EOF
+      ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP bash << EOF
+        set -e
+        export KUBECONFIG=/home/ec2-user/.kube/config
+        kubectl set image deployment/devops-app devops-app=$IMAGE_NAME
+        kubectl rollout status deployment/devops-app
+      EOF
   only:
     - main
