@@ -6,15 +6,13 @@ stages:
 variables:
   IMAGE_NAME: $DOCKER_USERNAME/devops-app:latest
 
-before_script:
-  - apt-get update -y
-  - apt-get install -y docker.io openssh-client
-
 # -----------------------------
 # 1. Build Docker Image
 # -----------------------------
 build:
   stage: build
+  before_script:
+    - apt-get update -y && apt-get install -y docker.io
   script:
     - docker build -t $IMAGE_NAME ./docker
 
@@ -23,6 +21,8 @@ build:
 # -----------------------------
 push:
   stage: push
+  before_script:
+    - apt-get update -y && apt-get install -y docker.io
   script:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - docker push $IMAGE_NAME
@@ -33,19 +33,17 @@ push:
 deploy:
   stage: deploy
   before_script:
-    # Start SSH agent and add private key
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-
   script:
-    # SSH to worker node via master and update deployment image
-    - ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP "
-        ssh -o StrictHostKeyChecking=no $EC2_USER@$WORKER_PRIVATE_IP '
+    - |
+      ssh -o StrictHostKeyChecking=no $EC2_USER@$MASTER_IP bash << 'MASTER_EOF'
+        ssh -o StrictHostKeyChecking=no $EC2_USER@$WORKER_PRIVATE_IP bash << 'WORKER_EOF'
+          set -e
           export KUBECONFIG=/home/ec2-user/.kube/config
           kubectl set image -f /home/ec2-user/devops-project/kubernetes/deploy.yml devops-app=$IMAGE_NAME --record
-
           kubectl apply -f /home/ec2-user/devops-project/kubernetes/deploy.yml
-        '
-      "
+        WORKER_EOF
+      MASTER_EOF
