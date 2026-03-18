@@ -1,43 +1,32 @@
 stages:
-  - build
-  - push
+  - build_and_push
   - deploy
 
 variables:
   IMAGE_NAME: $DOCKER_USERNAME/devops-app:latest
   DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""   # Disable TLS for DinD
+  DOCKER_TLS_CERTDIR: ""
 
 # -----------------------------
-# 1. Build Docker Image
+# 1. Build and Push Docker Image
 # -----------------------------
-build:
-  stage: build
+build_and_push:
+  stage: build_and_push
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
   script:
     - docker info
+    # Build the image using the Dockerfile inside your docker folder
     - docker build -t $IMAGE_NAME -f docker/Dockerfile .
-  only:
-    - main
-
-# -----------------------------
-# 2. Push Docker Image to Docker Hub
-# -----------------------------
-push:
-  stage: push
-  image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
-  script:
+    # Login and push in the same job
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - docker push $IMAGE_NAME
   only:
     - main
 
 # -----------------------------
-# 3. Deploy / Update in Kubernetes Cluster
+# 2. Deploy / Update in Kubernetes Cluster
 # -----------------------------
 deploy:
   stage: deploy
