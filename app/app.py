@@ -18,8 +18,8 @@ ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@devops.local")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
 # ─── In-memory data store ────────────────────────────────────────
-users = [{"id": 1, "name": "Mouhcine"}, {"id": 2, "name": "Mohamed"},{"id": 3, "name": "Oussama"}]
-next_id = 4
+users = [{"id": 1, "name": "Mouhcine"}, {"id": 2, "name": "Mohamed"},{"id": 3, "name": "Oussama"},{"id": 4, "name": "Hamza"}]
+next_id = 5
 
 
 # ─── Auth helpers ────────────────────────────────────────────────
