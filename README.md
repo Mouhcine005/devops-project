@@ -1,73 +1,131 @@
-🚀 DevOps CI/CD Pipeline on AWS
-📌 Overview
+# 🚀 DevOps CI/CD Pipeline on AWS
 
-This project implements a complete DevOps pipeline on AWS that automates the deployment of a containerized application using:
+A fully automated DevOps pipeline that provisions cloud infrastructure, configures servers, containerizes an application, and deploys it to Kubernetes — triggered on every code push.
 
-Terraform (Infrastructure as Code)
-Ansible (Configuration Management)
-Docker (Containerization)
-Kubernetes (Orchestration)
-GitLab CI (CI/CD)
+---
 
-Any code push automatically triggers testing, image build, and deployment to a Kubernetes cluster.
+## 🛠️ Tech Stack
 
-🏗️ Architecture
-AWS Infrastructure
-VPC, Subnet, Security Group
-2 EC2 instances:
-Master node (Kubernetes control plane)
-Worker node
-Application
-Flask API
-Dockerized and stored on Docker Hub
-CI/CD
-GitLab pipeline:
-Test
-Build & Push
-Deploy
-Deployment
-Kubernetes Deployment + Service (NodePort)
-⚙️ Setup
-1. Provision Infrastructure
+| Layer | Tool |
+|---|---|
+| Infrastructure | Terraform |
+| Configuration | Ansible |
+| Containerization | Docker |
+| Orchestration | Kubernetes |
+| CI/CD | GitLab CI |
+| Cloud | AWS (EC2, VPC) |
+
+---
+
+## 🏗️ Architecture
+
+### AWS Infrastructure
+- VPC, Subnet, Security Group
+- **2 EC2 instances:**
+  - `master` — Kubernetes control plane (publicly accessible)
+  - `worker` — Kubernetes worker node
+
+### Application
+- Flask REST API
+- Dockerized and pushed to Docker Hub
+
+### CI/CD Pipeline (GitLab)
+
+```
+Code Push → Test → Build & Push Image → Deploy to Kubernetes
+```
+
+### Kubernetes
+- `Deployment` + `Service` (NodePort)
+
+---
+
+## 📂 Project Structure
+
+```
+.
+├── app/                  # Flask application
+├── docker/               # Dockerfile
+├── terraform/            # AWS infrastructure (IaC)
+├── ansible/              # Server configuration playbooks
+├── kubernetes/           # K8s manifests
+└── .gitlab-ci.yml        # CI/CD pipeline definition
+```
+
+---
+
+## ⚙️ Setup
+
+### 1. Provision Infrastructure
+
+```bash
 cd terraform
 terraform init
 terraform apply
-2. Configure Servers
+```
+
+### 2. Configure Servers
+
+```bash
 cd ansible
 ansible-playbook -i inventory install_k8s.yml
-3. Deploy Application (Manual)
+```
+
+### 3. Deploy Application (Manual)
+
+```bash
 kubectl apply -f kubernetes/deploy.yml
-4. CI/CD Configuration
+```
 
-Set these variables in GitLab:
+### 4. CI/CD Variables
 
-DOCKER_USERNAME
-DOCKER_PASSWORD
-SSH_PRIVATE_KEY
-MASTER_IP
-EC2_USER
-🔁 CI/CD Workflow
-Push code to GitLab
-Pipeline runs:
-Tests application
-Builds & pushes Docker image
-Deploys to Kubernetes via SSH
-Application updates automatically
-📂 Project Structure
-.
-├── app/
-├── docker/
-├── terraform/
-├── ansible/
-├── kubernetes/
-└── .gitlab-ci.yml
-🧪 Run Locally
+Set the following secrets in **GitLab → Settings → CI/CD → Variables**:
+
+| Variable | Description |
+|---|---|
+| `DOCKER_USERNAME` | Docker Hub username |
+| `DOCKER_PASSWORD` | Docker Hub password |
+| `SSH_PRIVATE_KEY` | Private key to SSH into EC2 |
+| `MASTER_IP` | Public IP of the master node |
+| `EC2_USER` | EC2 SSH user (e.g. `ubuntu`) |
+
+---
+
+## 🔁 CI/CD Workflow
+
+```
+1. Push code to GitLab
+        ↓
+2. Pipeline triggers automatically
+        ↓
+3. [Test]    Run application tests
+        ↓
+4. [Build]   Build Docker image & push to Docker Hub
+        ↓
+5. [Deploy]  SSH into master node → kubectl rollout restart
+```
+
+> Only the master node is publicly accessible. The worker node is internal.
+
+---
+
+## 🧪 Run Locally
+
+```bash
 pip install -r app/requirements.txt
 python app/app.py
-📌 Notes
-Uses latest Docker tag
-Deployment update triggered via rollout restart
-Only master node is publicly accessible
-👨‍💻 Author
+```
 
-Mouhcine
+---
+
+## 📌 Notes
+
+- Docker image is tagged as `latest`
+- Deployments are updated via `kubectl rollout restart`
+- Only the master node exposes a public IP
+
+---
+
+## 👨‍💻 Author
+
+**Mouhcine** — Built with ❤️ and a lot of `terraform apply`
